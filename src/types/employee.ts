@@ -6,3 +6,9 @@ export interface Employee {
   status: 'Active' | 'Inactive';
   slackId: string;
 }
+
+export interface ApiResponse {
+  success: boolean;
+  data: Employee[];
+  message?: string;
+}

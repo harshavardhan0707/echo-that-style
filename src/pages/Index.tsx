@@ -5,28 +5,129 @@ import Header from "@/components/Header";
 import ControlPanel from "@/components/ControlPanel";
 import { mockEmployeeData } from "@/data/mockData";
 import { toast } from "sonner";
+import { Employee, ApiResponse } from "@/types/employee";
+
+// Mock API URL - replace with your actual API endpoint
+const API_URL = "https://api.example.com/employees";
 
 const Index = () => {
-  const [employees, setEmployees] = useState(mockEmployeeData);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRefreshGrid = () => {
+  // Function to fetch employees data from API
+  const fetchEmployeesData = async () => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setEmployees([...mockEmployeeData]);
+    try {
+      const response = await fetch(API_URL);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const result: ApiResponse = await response.json();
+      
+      if (result.success) {
+        setEmployees(result.data);
+        toast.success("Data loaded successfully");
+      } else {
+        toast.error(result.message || "Failed to load data");
+        // Fallback to mock data if API fails
+        setEmployees(mockEmployeeData);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load data. Using mock data instead.");
+      // Fallback to mock data if API fails
+      setEmployees(mockEmployeeData);
+    } finally {
       setIsLoading(false);
-      toast.success("Grid data refreshed successfully");
-    }, 800);
+    }
   };
 
-  const handleRefreshDatabase = () => {
+  // Load data when component mounts
+  useEffect(() => {
+    fetchEmployeesData();
+  }, []);
+
+  const handleGeneralGrid = async () => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch(API_URL);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const result: ApiResponse = await response.json();
+      
+      if (result.success) {
+        setEmployees(result.data);
+        toast.success("General grid data loaded successfully");
+      } else {
+        toast.error(result.message || "Failed to load general grid data");
+      }
+    } catch (error) {
+      console.error("Error fetching general grid data:", error);
+      toast.error("Failed to load general grid data");
+    } finally {
       setIsLoading(false);
-      toast.success("Database refreshed successfully");
-    }, 1200);
+    }
+  };
+
+  const handleRefreshGrid = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/refresh`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const result: ApiResponse = await response.json();
+      
+      if (result.success) {
+        setEmployees(result.data);
+        toast.success("Grid data refreshed successfully");
+      } else {
+        toast.error(result.message || "Failed to refresh grid data");
+      }
+    } catch (error) {
+      console.error("Error refreshing grid data:", error);
+      toast.error("Failed to refresh grid data");
+      // Simulate refresh with mock data for demo purposes
+      setTimeout(() => {
+        setEmployees([...mockEmployeeData]);
+        setIsLoading(false);
+      }, 800);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefreshDatabase = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/database`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success("Database refreshed successfully");
+      } else {
+        toast.error(result.message || "Failed to refresh database");
+      }
+    } catch (error) {
+      console.error("Error refreshing database:", error);
+      toast.error("Failed to refresh database");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -34,6 +135,7 @@ const Index = () => {
       <Header />
       <main className="container mx-auto px-4 py-6">
         <ControlPanel 
+          onGeneralGrid={handleGeneralGrid}
           onRefreshGrid={handleRefreshGrid} 
           onRefreshDatabase={handleRefreshDatabase}
           isLoading={isLoading}

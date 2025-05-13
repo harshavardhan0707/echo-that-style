@@ -1,12 +1,48 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState, useEffect } from "react";
+import DataGrid from "@/components/DataGrid";
+import Header from "@/components/Header";
+import ControlPanel from "@/components/ControlPanel";
+import { mockEmployeeData } from "@/data/mockData";
+import { toast } from "sonner";
 
 const Index = () => {
+  const [employees, setEmployees] = useState(mockEmployeeData);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleRefreshGrid = () => {
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setEmployees([...mockEmployeeData]);
+      setIsLoading(false);
+      toast.success("Grid data refreshed successfully");
+    }, 800);
+  };
+
+  const handleRefreshDatabase = () => {
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success("Database refreshed successfully");
+    }, 1200);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
+      <Header />
+      <main className="container mx-auto px-4 py-6">
+        <ControlPanel 
+          onRefreshGrid={handleRefreshGrid} 
+          onRefreshDatabase={handleRefreshDatabase}
+          isLoading={isLoading}
+        />
+        
+        <div className="mt-6 bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
+          <DataGrid data={employees} isLoading={isLoading} />
+        </div>
+      </main>
     </div>
   );
 };
